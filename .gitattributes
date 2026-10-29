@@ -1,0 +1,2 @@
+# Keep third-party files byte-identical to the published releases.
+web/vendor/** -text

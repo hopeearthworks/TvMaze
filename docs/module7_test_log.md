@@ -16,9 +16,9 @@
 | 5 | Missing configuration file | `missing.json` (doesn't exist) | Helpful error message, no traceback; logged | `ERROR: Configuration file not found: tests/configs/missing.json`; logged; exit 1 | **Pass** |
 | 6 | Report file cannot be created | `bad_output.json`: `output_file` in a folder that doesn't exist | File error handled separately from input/API errors; logged | `ERROR: Unable to create report file: [Errno 2] No such file or directory…`; logged; exit 1 | **Pass** |
 | 7 | API connection failure | Network failure simulated (unit test, `requests.get` raises `ConnectionError`) | Handled as `RequestException`, not a crash | `RequestException` raised by the API layer; `main.py` logs "Unable to retrieve TV show data" | **Pass** |
-| 8 | Default config | `config.json`: `"comedy"`, min 8 | Runs without code changes | 10 found, 0 meet the threshold (all comedy results are unrated); report saved | **Pass** |
+| 8 | Default config | `config.json`: `"comedy"`, genre mode, min 8 | Runs without code changes and returns real comedies | 671 comedies found, 91 rated 8 or above (Rick and Morty 8.7, The IT Crowd 8.7, Fargo 8.6, …); report saved | **Pass** |
 
-> **Observation (test 8):** TVMaze's search matches show *names*, not genres, so `"comedy"` returns shows with "Comedy" in the title. Most of them have no rating.
+> **Observation (test 8):** At first this test returned 0 shows. TVMaze's search matches show *titles*, so `"comedy"` found shows with "Comedy" in the name, most of them unrated. Adding a `"search_mode": "genre"` option, which scans TVMaze's show index, fixed this; the result above is the re-test.
 
 ## Issues found and fixed during development
 The course's model answer lists typical failures in a first-draft script. Each one is handled in this project, and the related test above was re-run after the fix:
@@ -31,29 +31,25 @@ The course's model answer lists typical failures in a first-draft script. Each o
 | API connection failures not handled | `timeout=10`, `raise_for_status()`, `requests.RequestException` caught | Test 7: Pass |
 | File creation errors not handled | `OSError` from `report.save_report` caught and logged | Test 6: Pass |
 
-## Automated unit tests (`tests/test_automation.py`, API mocked)
-Command: `python -m unittest discover -s tests -t . -v`
+## Automated tests (pytest, API mocked)
+Command: `python -m pytest --cov`. The suite started as 11 `unittest` tests and grew as the project gained features.
 
-| Test | Covers | Result |
+| File | Tests | Covers |
 |---|---|---|
-| `test_valid_config_loads` | Valid config (incl. default `output_file`) | Pass |
-| `test_empty_search_term_rejected` | Empty term (config) | Pass |
-| `test_missing_config_file_rejected` | Missing config | Pass |
-| `test_valid_search_returns_show_objects` | Valid term, JSON → `Show` | Pass |
-| `test_invalid_search_returns_no_shows` | Invalid term | Pass |
-| `test_empty_search_term_raises` | Empty term (API layer) | Pass |
-| `test_api_failure_raises_request_exception` | API connection failure | Pass |
-| `test_threshold_keeps_rated_shows_only` | Filter excludes unrated shows | Pass |
-| `test_high_threshold_returns_nothing` | High threshold | Pass |
-| `test_report_written` | Report file contents | Pass |
-| `test_report_in_missing_folder_raises` | File creation error | Pass |
+| `test_automation.py` | 14 | Config validation, JSON → `Show`, invalid/empty terms, API failure, rating filter and boundary (8.0 meets 8), report file errors |
+| `test_cli.py` | 6 | `main.py --cli` end to end: success + report, no results, missing/invalid config, API outage, unwritable report (each returns the right exit code and logs the error) |
+| `test_web_server.py` | 20 | Real HTTP server on a random port: pages, vendor assets and MIME types, path traversal blocked, search, 400/404/502 errors, CSV download |
+| `test_genre_search.py` | 6 | Genre normalisation, genre filter order, show-index disk cache save/reuse/expiry, genre config validation |
+| `test_show_details.py` | 7 | Cast + next episode extraction, invalid show IDs |
+| `test_api_cache.py` | 3 | Cache hits, cache expiry, HTTP 429 retry |
+| `test_report.py` | 3 | Text report, CSV report, CSV formula neutralising |
 
 ```
-Ran 11 tests in 0.005s
-
-OK
+59 passed in 11.60s
+TOTAL coverage: 85%
 ```
 
+Static checks: `ruff check .` reports *All checks passed!*; `mypy` reports *Success: no issues found in 10 source files*.
 ## Copilot prompts used for testing
 - *Suggest normal, boundary and invalid test cases for this TVMaze automation.*
 - *Review this script and identify any missing input validation or error handling.*
