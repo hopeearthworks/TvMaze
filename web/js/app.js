@@ -45,7 +45,9 @@
     meta: document.getElementById("modalMeta"),
     genres: document.getElementById("modalGenres"),
     summary: document.getElementById("modalSummary"),
+    extras: document.getElementById("modalExtras"),
     link: document.getElementById("modalLink"),
+    showId: null, // show currently displayed
   };
 
   const errorToast = new bootstrap.Toast(elements.toast, { delay: 6000 });
@@ -277,7 +279,50 @@
     modal.summary.textContent = show.summary || "No summary available.";
     modal.link.hidden = !show.url;
     if (show.url) modal.link.href = show.url;
+    modal.showId = show.id;
+    modal.extras.innerHTML = show.id
+      ? '<div class="small text-body-secondary"><span class="spinner-border spinner-border-sm me-2"></span>Loading cast…</div>'
+      : "";
     modal.instance.show();
+    if (show.id) loadShowExtras(show.id);
+  }
+
+  function castHtml(member) {
+    const photo = member.image
+      ? `<img src="${escapeHtml(member.image)}" alt="" loading="lazy">`
+      : '<span class="cast-placeholder"><i class="bi bi-person"></i></span>';
+    return `
+      <div class="cast-member">
+        ${photo}
+        <div class="cast-name">${escapeHtml(member.name)}</div>
+        <div class="cast-role">${escapeHtml(member.character || "")}</div>
+      </div>`;
+  }
+
+  async function loadShowExtras(showId) {
+    try {
+      const response = await fetch(`/api/show?id=${encodeURIComponent(showId)}`);
+      const data = await response.json();
+      if (modal.showId !== showId) return; // The user opened a different show.
+      if (!response.ok) throw new Error(data.error || "Could not load details.");
+
+      let html = "";
+      if (data.next_episode) {
+        const ep = data.next_episode;
+        const code = ep.season && ep.number ? `S${ep.season}·E${ep.number} ` : "";
+        html += `<div class="next-episode mb-3"><i class="bi bi-calendar-event me-2"></i>
+          <strong>Next episode:</strong> ${escapeHtml(code)}${escapeHtml(ep.name || "TBA")}
+          ${ep.airdate ? `<span class="text-body-secondary">· ${escapeHtml(ep.airdate)}</span>` : ""}</div>`;
+      }
+      if (data.cast.length) {
+        html += `<h3 class="h6 fw-bold mb-2">Cast</h3><div class="cast-row">${data.cast.map(castHtml).join("")}</div>`;
+      }
+      modal.extras.innerHTML = html;
+    } catch (error) {
+      if (modal.showId !== showId) return;
+      modal.extras.innerHTML =
+        `<div class="small text-body-secondary"><i class="bi bi-exclamation-circle me-1"></i>${escapeHtml(error.message)}</div>`;
+    }
   }
 
   /* ---------- Data ---------- */

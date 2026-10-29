@@ -8,6 +8,8 @@ Endpoints:
                          -> shows found, with a flag for those meeting the rating
     GET /api/report?<same as search>&format=<txt|csv>
                          -> the matching shows as a downloadable report
+    GET /api/show?id=<TVMaze show ID>
+                         -> cast and next episode for the details modal
 """
 
 import json
@@ -22,6 +24,7 @@ from urllib.parse import parse_qs, urlparse
 import requests
 
 from tvmaze import automation
+from tvmaze.api_client import get_show_details
 from tvmaze.config import SEARCH_MODES, ConfigError, load_config
 from tvmaze.models import GENRES
 from tvmaze.report import format_report_csv, format_report_text
@@ -48,6 +51,14 @@ def parse_minimum_rating(value):
     if not 0 <= rating <= 10:
         raise ValueError("Minimum rating must be between 0 and 10")
     return rating
+
+
+def parse_show_id(query):
+    """Return the positive integer show ID from the query string."""
+    value = query.get("id", [""])[0]
+    if not value.isdigit() or int(value) <= 0:
+        raise ValueError("Show ID must be a positive whole number")
+    return int(value)
 
 
 def parse_search_query(query):
@@ -89,6 +100,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.handle_api(lambda: self.send_json(build_search_response(*parse_search_query(query))))
         elif url.path == "/api/report":
             self.handle_api(lambda: self.handle_report(query))
+        elif url.path == "/api/show":
+            self.handle_api(lambda: self.send_json(get_show_details(parse_show_id(query))))
         else:
             self.serve_static(url.path)
 
@@ -130,6 +143,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         except ValueError as error:
             logger.error("Invalid request: %s", error)
             self.send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)
+        except requests.HTTPError as error:
+            if error.response is not None and error.response.status_code == 404:
+                logger.warning("TVMaze has no record for %s", self.path)
+                self.send_json({"error": "Show not found."}, HTTPStatus.NOT_FOUND)
+                return
+            logger.error("Unable to retrieve TV show data: %s", error)
+            self.send_json({"error": "Unable to reach the TVMaze service. Please try again."},
+                           HTTPStatus.BAD_GATEWAY)
         except requests.RequestException as error:
             logger.error("Unable to retrieve TV show data: %s", error)
             self.send_json({"error": "Unable to reach the TVMaze service. Please try again."},

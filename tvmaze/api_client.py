@@ -95,6 +95,33 @@ def search_shows(search_term: str) -> list[Show]:
     return [Show.from_api(result["show"]) for result in results]
 
 
+def get_show_details(show_id: int, max_cast: int = 12) -> dict[str, Any]:
+    """Return the cast and next episode for a show.
+
+    Raises requests.RequestException if the API cannot be reached (an
+    unknown ID gives a 404 HTTPError).
+    """
+    data = get_json(f"{SHOW_INDEX_URL}/{int(show_id)}",
+                    {"embed[]": ["cast", "nextepisode"]})
+    embedded = data.get("_embedded") or {}
+    cast = [
+        {
+            "name": (member.get("person") or {}).get("name"),
+            "character": (member.get("character") or {}).get("name"),
+            "image": ((member.get("person") or {}).get("image") or {}).get("medium"),
+        }
+        for member in (embedded.get("cast") or [])[:max_cast]
+    ]
+    episode = embedded.get("nextepisode")
+    next_episode = {
+        "name": episode.get("name"),
+        "season": episode.get("season"),
+        "number": episode.get("number"),
+        "airdate": episode.get("airdate"),
+    } if episode else None
+    return {"id": data.get("id"), "cast": cast, "next_episode": next_episode}
+
+
 def search_by_genre(genre: str) -> list[Show]:
     """Return shows in the given genre from the show index, highest rated first.
 
