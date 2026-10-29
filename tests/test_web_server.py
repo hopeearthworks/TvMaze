@@ -69,6 +69,32 @@ def test_index_page_is_served(server):
     assert "ShowFinder" in body or "Show<span" in body
 
 
+def test_page_uses_only_local_assets(server):
+    _, _, body = get(server + "/")
+    for cdn in ("cdn.jsdelivr", "googleapis", "gstatic", "unpkg", "cdnjs"):
+        assert cdn not in body
+
+
+@pytest.mark.parametrize(
+    ("path", "content_type"),
+    [
+        ("/vendor/bootstrap/bootstrap.min.css", "text/css"),
+        ("/vendor/bootstrap/bootstrap.bundle.min.js", "text/javascript"),
+        ("/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2?v=1", "font/woff2"),
+        ("/vendor/fonts/plus-jakarta-sans-latin-wght-normal.woff2", "font/woff2"),
+    ],
+)
+def test_vendor_assets_are_served_with_correct_types(server, path, content_type):
+    status, headers, _ = get_bytes(server + path)
+    assert status == 200
+    assert headers["Content-Type"] == content_type
+
+
+def get_bytes(url):
+    with urllib.request.urlopen(url, timeout=5) as response:
+        return response.status, response.headers, response.read()
+
+
 @pytest.mark.parametrize("path", ["/../main.py", "/..%2Fconfig.json", "/missing.css"])
 def test_files_outside_web_folder_are_not_served(server, path):
     assert get(server + path)[0] == 404

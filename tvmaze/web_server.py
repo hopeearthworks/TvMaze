@@ -31,6 +31,15 @@ from tvmaze.report import format_report_csv, format_report_text
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
+# Don't rely on the Windows registry for these (it can map .js to text/plain).
+for _type, _extension in (
+    ("text/javascript", ".js"),
+    ("text/css", ".css"),
+    ("font/woff2", ".woff2"),
+    ("font/woff", ".woff"),
+):
+    mimetypes.add_type(_type, _extension)
+
 logger = logging.getLogger(__name__)
 
 
