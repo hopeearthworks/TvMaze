@@ -16,10 +16,14 @@ def search(search_term: str, search_mode: str = "name") -> list[Show]:
     return search_shows(search_term)
 
 
+def meets_threshold(show: Show, minimum_rating: float) -> bool:
+    """The single rule for "good enough": rated, and at or above the minimum."""
+    return show.rating is not None and show.rating >= minimum_rating
+
+
 def filter_by_rating(shows: list[Show], minimum_rating: float) -> list[Show]:
     """Return the shows rated at or above minimum_rating (unrated shows are excluded)."""
-    matching = [show for show in shows
-                if show.rating is not None and show.rating >= minimum_rating]
+    matching = [show for show in shows if meets_threshold(show, minimum_rating)]
     logger.info("%d of %d show(s) meet minimum rating %s",
                 len(matching), len(shows), minimum_rating)
     return matching

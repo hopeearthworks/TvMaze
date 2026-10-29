@@ -58,7 +58,10 @@ def build_search_response(search_term, minimum_rating, search_mode="name"):
         "total_found": len(shows),
         "matching_count": len(matching),
         "average_rating": round(average, 1) if average is not None else None,
-        "shows": [dict(show.to_dict(), meets_threshold=show in matching) for show in shows],
+        "shows": [
+            dict(show.to_dict(), meets_threshold=automation.meets_threshold(show, minimum_rating))
+            for show in shows
+        ],
     }
 
 

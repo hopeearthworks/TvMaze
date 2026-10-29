@@ -52,6 +52,7 @@
     searchTerm: "",
     shows: [],        // every show returned by the API
     searchMode: "name",
+    summary: null,    // counts and average returned by the server
     genre: null,      // active genre filter
     limit: PAGE_SIZE, // number of cards currently rendered
     loaded: false,
@@ -70,7 +71,8 @@
   };
 
   const minimumRating = () => parseFloat(elements.range.value);
-  const meetsThreshold = (show) => show.rating !== null && show.rating >= minimumRating();
+  // The server (tvmaze.automation.meets_threshold) decides which shows qualify.
+  const meetsThreshold = (show) => show.meets_threshold;
   const year = (show) => (show.premiered ? show.premiered.slice(0, 4) : null);
 
   function showError(message) {
@@ -151,16 +153,13 @@
   }
 
   function renderStats() {
-    const matching = state.shows.filter(meetsThreshold);
-    const average = matching.length
-      ? (matching.reduce((sum, show) => sum + show.rating, 0) / matching.length).toFixed(1)
-      : "-";
+    const { total_found, matching_count, average_rating } = state.summary;
     elements.statTermLabel.textContent = state.searchMode === "genre" ? "Genre" : "Search term";
     elements.statTerm.textContent = state.searchTerm;
     elements.statTerm.title = state.searchTerm;
-    elements.statFound.textContent = state.shows.length;
-    elements.statMatching.textContent = matching.length;
-    elements.statAverage.textContent = average;
+    elements.statFound.textContent = total_found;
+    elements.statMatching.textContent = matching_count;
+    elements.statAverage.textContent = average_rating ?? "-";
     elements.stats.hidden = false;
   }
 
@@ -239,7 +238,7 @@
 
     if (visible.length === 0) {
       renderEmpty("bi-star", "No shows met the minimum rating",
-        `Lower the rating below ${minimumRating().toFixed(1)} or switch on “Show all results”.`);
+        `Lower the rating below ${state.summary.minimum_rating.toFixed(1)} or switch on “Show all results”.`);
       return;
     }
 
@@ -287,8 +286,8 @@
     elements.button.querySelector(".btn-label").classList.toggle("d-none", isLoading);
   }
 
-  async function search() {
-    const searchMode = currentMode();
+  // Validate the form and run a new search.
+  function search() {
     const searchTerm = currentTerm().trim();
     if (!searchTerm) {
       elements.searchError.hidden = false;
@@ -298,30 +297,41 @@
     }
     elements.searchError.hidden = true;
     elements.input.classList.remove("is-invalid");
+    runSearch(searchTerm, currentMode());
+  }
 
+  // `refresh` re-runs the current search (e.g. after a rating change) without
+  // resetting filters or showing loading skeletons.
+  let latestRequest = 0;
+  async function runSearch(searchTerm, searchMode, { refresh = false } = {}) {
+    const requestId = ++latestRequest;
     setLoading(true);
-    renderSkeletons();
+    if (!refresh) renderSkeletons();
     const params = new URLSearchParams({ q: searchTerm, mode: searchMode, min_rating: minimumRating() });
     history.replaceState(null, "", `?${params}`);
 
     try {
       const response = await fetch(`/api/search?${params}`);
       const data = await response.json();
+      if (requestId !== latestRequest) return; // A newer search has started.
       if (!response.ok) throw new Error(data.error || "Search failed.");
       state.searchTerm = data.search_term;
       state.searchMode = data.search_mode;
       state.shows = data.shows;
-      state.genre = null;
+      state.summary = data;
+      if (!refresh) state.genre = null;
       state.loaded = true;
       resetAndRender();
     } catch (error) {
+      if (requestId !== latestRequest) return;
       state.loaded = false;
       elements.stats.hidden = true;
       elements.toolbar.hidden = true;
+      elements.loadMoreWrap.hidden = true;
       renderEmpty("bi-wifi-off", "Something went wrong", error.message);
       showError(error.message);
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest) setLoading(false);
     }
   }
 
@@ -380,9 +390,14 @@
   });
 
   // The rating filter is applied instantly in the browser, so no new API call is needed.
+  // Re-query the server shortly after the slider stops moving.
+  let ratingTimer;
   elements.range.addEventListener("input", () => {
     updateRangeLabel();
-    resetAndRender();
+    if (!state.loaded) return;
+    clearTimeout(ratingTimer);
+    ratingTimer = setTimeout(
+      () => runSearch(state.searchTerm, state.searchMode, { refresh: true }), 300);
   });
 
   document.querySelectorAll(".quick-search").forEach((button) =>

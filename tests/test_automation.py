@@ -84,6 +84,11 @@ class FilterTests(unittest.TestCase):
     def test_high_threshold_returns_nothing(self):
         self.assertEqual(automation.filter_by_rating(self.shows, 9.5), [])
 
+    def test_meets_threshold_rule(self):
+        self.assertTrue(automation.meets_threshold(Show("A", rating=8.0), 8))  # boundary
+        self.assertFalse(automation.meets_threshold(Show("B", rating=7.9), 8))
+        self.assertFalse(automation.meets_threshold(Show("C", rating=None), 0))
+
 
 class ReportTests(unittest.TestCase):
 
