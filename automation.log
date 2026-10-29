@@ -1,0 +1,169 @@
+2026-10-29 09:28:52,770 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:28:52,770 | INFO     | tvmaze.config | Config loaded from tests/configs/valid.json: Config(search_term='doctor', minimum_rating=7.0, output_file='tv_report.txt')
+2026-10-29 09:28:52,770 | INFO     | tvmaze.api_client | Searching TVMaze for 'doctor'
+2026-10-29 09:28:53,118 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:28:53,119 | INFO     | tvmaze.automation | 7 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:28:53,120 | INFO     | tvmaze.report | 7 show(s) written to report tv_report.txt
+2026-10-29 09:28:53,121 | INFO     | tvmaze.main | Automation finished successfully
+2026-10-29 09:28:53,312 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:28:53,312 | INFO     | tvmaze.config | Config loaded from tests/configs/invalid_term.json: Config(search_term='xyzzyqwerty', minimum_rating=5.0, output_file='tv_report.txt')
+2026-10-29 09:28:53,312 | INFO     | tvmaze.api_client | Searching TVMaze for 'xyzzyqwerty'
+2026-10-29 09:28:53,685 | INFO     | tvmaze.api_client | API returned 0 result(s)
+2026-10-29 09:28:53,687 | INFO     | tvmaze.automation | 0 of 0 show(s) meet minimum rating 5.0
+2026-10-29 09:28:53,689 | INFO     | tvmaze.report | 0 show(s) written to report tv_report.txt
+2026-10-29 09:28:53,690 | INFO     | tvmaze.main | Automation finished successfully
+2026-10-29 09:28:53,898 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:28:53,898 | ERROR    | tvmaze.main | 'search_term' must be a non-empty string
+2026-10-29 09:28:54,062 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:28:54,062 | INFO     | tvmaze.config | Config loaded from tests/configs/high_threshold.json: Config(search_term='sherlock', minimum_rating=9.5, output_file='tv_report.txt')
+2026-10-29 09:28:54,062 | INFO     | tvmaze.api_client | Searching TVMaze for 'sherlock'
+2026-10-29 09:28:54,413 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:28:54,415 | INFO     | tvmaze.automation | 0 of 10 show(s) meet minimum rating 9.5
+2026-10-29 09:28:54,416 | INFO     | tvmaze.report | 0 show(s) written to report tv_report.txt
+2026-10-29 09:28:54,416 | INFO     | tvmaze.main | Automation finished successfully
+2026-10-29 09:28:54,617 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:28:54,617 | ERROR    | tvmaze.main | Configuration file not found: tests/configs/missing.json
+2026-10-29 09:28:54,779 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:28:54,780 | INFO     | tvmaze.config | Config loaded from tests/configs/bad_output.json: Config(search_term='sherlock', minimum_rating=8.0, output_file='no_such_folder/tv_report.txt')
+2026-10-29 09:28:54,780 | INFO     | tvmaze.api_client | Searching TVMaze for 'sherlock'
+2026-10-29 09:28:55,124 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:28:55,126 | INFO     | tvmaze.automation | 1 of 10 show(s) meet minimum rating 8.0
+2026-10-29 09:28:55,126 | ERROR    | tvmaze.main | Unable to create report file: [Errno 2] No such file or directory: 'no_such_folder/tv_report.txt'
+2026-10-29 09:28:55,290 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:28:55,290 | INFO     | tvmaze.config | Config loaded from C:\Users\HopeNdhlovu\PycharmProjects\TvMaze\config.json: Config(search_term='comedy', minimum_rating=8.0, output_file='tv_report.txt')
+2026-10-29 09:28:55,290 | INFO     | tvmaze.api_client | Searching TVMaze for 'comedy'
+2026-10-29 09:28:55,633 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:28:55,634 | INFO     | tvmaze.automation | 0 of 10 show(s) meet minimum rating 8.0
+2026-10-29 09:28:55,635 | INFO     | tvmaze.report | 0 show(s) written to report tv_report.txt
+2026-10-29 09:28:55,635 | INFO     | tvmaze.main | Automation finished successfully
+2026-10-29 09:29:01,968 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:29:01,968 | INFO     | tvmaze.config | Config loaded from tests/configs/valid.json: Config(search_term='doctor', minimum_rating=7.0, output_file='tv_report.txt')
+2026-10-29 09:29:01,968 | INFO     | tvmaze.api_client | Searching TVMaze for 'doctor'
+2026-10-29 09:29:02,284 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:29:02,285 | INFO     | tvmaze.automation | 7 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:29:02,286 | INFO     | tvmaze.report | 7 show(s) written to report tv_report.txt
+2026-10-29 09:29:02,287 | INFO     | tvmaze.main | Automation finished successfully
+2026-10-29 09:33:23,575 | INFO     | tvmaze.web_server | Web UI started on http://127.0.0.1:8765
+2026-10-29 09:33:25,476 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET / HTTP/1.1" 200 -
+2026-10-29 09:33:25,581 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:33:25,662 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:33:25,744 | INFO     | tvmaze.config | Config loaded from C:\Users\HopeNdhlovu\PycharmProjects\TvMaze\config.json: Config(search_term='comedy', minimum_rating=8.0, output_file='tv_report.txt')
+2026-10-29 09:33:25,744 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/config HTTP/1.1" 200 -
+2026-10-29 09:33:25,798 | ERROR    | tvmaze.web_server | Invalid search request: Search term must not be empty
+2026-10-29 09:33:25,799 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=&min_rating=8 HTTP/1.1" 400 -
+2026-10-29 09:33:25,876 | ERROR    | tvmaze.web_server | Invalid search request: Minimum rating must be a number
+2026-10-29 09:33:25,877 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=doctor&min_rating=abc HTTP/1.1" 400 -
+2026-10-29 09:33:25,889 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:33:25,889 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /..%2Fconfig.json HTTP/1.1" 404 -
+2026-10-29 09:33:25,896 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:33:25,896 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /main.py HTTP/1.1" 404 -
+2026-10-29 09:33:25,902 | INFO     | tvmaze.api_client | Searching TVMaze for 'sherlock'
+2026-10-29 09:33:26,257 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:33:26,258 | INFO     | tvmaze.automation | 1 of 10 show(s) meet minimum rating 8.0
+2026-10-29 09:33:26,258 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=sherlock&min_rating=8 HTTP/1.1" 200 -
+2026-10-29 09:33:35,219 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /?q=doctor&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:35,222 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /?q=star&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:35,238 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:33:35,240 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:33:35,243 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:33:35,244 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:33:35,441 | INFO     | tvmaze.api_client | Searching TVMaze for 'star'
+2026-10-29 09:33:35,452 | INFO     | tvmaze.api_client | Searching TVMaze for 'doctor'
+2026-10-29 09:33:36,666 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:33:36,669 | INFO     | tvmaze.automation | 7 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:33:36,669 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=doctor&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:36,675 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:33:36,675 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-10-29 09:33:36,715 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:33:36,720 | INFO     | tvmaze.automation | 5 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:33:36,721 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=star&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:36,727 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:33:36,727 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-10-29 09:33:44,690 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /?q=doctor&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:44,703 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:33:44,704 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:33:44,941 | INFO     | tvmaze.api_client | Searching TVMaze for 'doctor'
+2026-10-29 09:33:45,968 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:33:45,971 | INFO     | tvmaze.automation | 7 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:33:45,971 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=doctor&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:45,978 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:33:45,978 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-10-29 09:33:47,861 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /?q=star&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:47,888 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:33:47,889 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:33:47,915 | INFO     | tvmaze.api_client | Searching TVMaze for 'star'
+2026-10-29 09:33:48,949 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:33:48,952 | INFO     | tvmaze.automation | 5 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:33:48,953 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=star&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:33:48,959 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:33:48,960 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-10-29 09:34:11,551 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /?q=star&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:34:11,580 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:34:11,585 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:34:11,717 | INFO     | tvmaze.api_client | Searching TVMaze for 'star'
+2026-10-29 09:34:12,856 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:34:12,858 | INFO     | tvmaze.automation | 5 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:34:12,859 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=star&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:34:12,864 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:34:12,865 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-10-29 09:34:15,554 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /?q=sherlock&min_rating=9.5 HTTP/1.1" 200 -
+2026-10-29 09:34:15,623 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:34:15,637 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:34:15,666 | INFO     | tvmaze.api_client | Searching TVMaze for 'sherlock'
+2026-10-29 09:34:16,757 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:34:16,760 | INFO     | tvmaze.automation | 0 of 10 show(s) meet minimum rating 9.5
+2026-10-29 09:34:16,760 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=sherlock&min_rating=9.5 HTTP/1.1" 200 -
+2026-10-29 09:34:16,767 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:34:16,767 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-10-29 09:35:53,423 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:35:53,423 | INFO     | tvmaze.config | Config loaded from C:\Users\HopeNdhlovu\PycharmProjects\TvMaze\config.json: Config(search_term='comedy', minimum_rating=8.0, output_file='tv_report.txt')
+2026-10-29 09:35:53,423 | INFO     | tvmaze.api_client | Searching TVMaze for 'comedy'
+2026-10-29 09:35:53,854 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:35:53,855 | INFO     | tvmaze.automation | 0 of 10 show(s) meet minimum rating 8.0
+2026-10-29 09:35:53,857 | INFO     | tvmaze.report | 0 show(s) written to report tv_report.txt
+2026-10-29 09:35:53,858 | INFO     | tvmaze.main | Automation finished successfully
+2026-10-29 09:37:00,392 | INFO     | tvmaze.web_server | Web UI started on http://localhost:8080
+2026-10-29 09:37:04,581 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET / HTTP/1.1" 200 -
+2026-10-29 09:37:04,674 | INFO     | tvmaze.config | Config loaded from C:\Users\HopeNdhlovu\PycharmProjects\TvMaze\config.json: Config(search_term='comedy', minimum_rating=8.0, output_file='tv_report.txt')
+2026-10-29 09:37:04,674 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/config HTTP/1.1" 200 -
+2026-10-29 09:37:04,739 | INFO     | tvmaze.api_client | Searching TVMaze for 'doctor'
+2026-10-29 09:37:05,864 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:37:05,867 | INFO     | tvmaze.automation | 7 of 10 show(s) meet minimum rating 7.0
+2026-10-29 09:37:05,868 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=doctor&min_rating=7 HTTP/1.1" 200 -
+2026-10-29 09:37:06,167 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:37:06,167 | ERROR    | tvmaze.main | Configuration file not found: tests/configs/missing.json
+2026-10-29 09:37:06,379 | INFO     | tvmaze.main | Automation started
+2026-10-29 09:37:06,379 | INFO     | tvmaze.config | Config loaded from C:\Users\HopeNdhlovu\PycharmProjects\TvMaze\config.json: Config(search_term='comedy', minimum_rating=8.0, output_file='tv_report.txt')
+2026-10-29 09:37:06,379 | INFO     | tvmaze.api_client | Searching TVMaze for 'comedy'
+2026-10-29 09:37:06,792 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:37:06,794 | INFO     | tvmaze.automation | 0 of 10 show(s) meet minimum rating 8.0
+2026-10-29 09:37:06,796 | INFO     | tvmaze.report | 0 show(s) written to report tv_report.txt
+2026-10-29 09:37:06,796 | INFO     | tvmaze.main | Automation finished successfully
+2026-10-29 09:37:54,637 | INFO     | tvmaze.web_server | Web UI started on http://localhost:8080
+2026-10-29 09:37:55,837 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET / HTTP/1.1" 200 -
+2026-10-29 09:37:55,857 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /css/styles.css HTTP/1.1" 200 -
+2026-10-29 09:37:55,859 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /js/app.js HTTP/1.1" 200 -
+2026-10-29 09:37:55,981 | INFO     | tvmaze.config | Config loaded from C:\Users\HopeNdhlovu\PycharmProjects\TvMaze\config.json: Config(search_term='comedy', minimum_rating=8.0, output_file='tv_report.txt')
+2026-10-29 09:37:55,981 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/config HTTP/1.1" 200 -
+2026-10-29 09:37:56,041 | INFO     | tvmaze.web_server | 127.0.0.1 - code 404, message Not Found
+2026-10-29 09:37:56,041 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-10-29 09:38:05,881 | INFO     | tvmaze.api_client | Searching TVMaze for 'comedy'
+2026-10-29 09:38:07,019 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:38:07,023 | INFO     | tvmaze.automation | 0 of 10 show(s) meet minimum rating 4.5
+2026-10-29 09:38:07,024 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=comedy&min_rating=4.5 HTTP/1.1" 200 -
+2026-10-29 09:38:09,691 | INFO     | tvmaze.api_client | Searching TVMaze for 'Sherlock'
+2026-10-29 09:38:10,983 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:38:10,988 | INFO     | tvmaze.automation | 3 of 10 show(s) meet minimum rating 4.5
+2026-10-29 09:38:10,988 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=Sherlock&min_rating=4.5 HTTP/1.1" 200 -
+2026-10-29 09:38:57,179 | INFO     | tvmaze.api_client | Searching TVMaze for 'Breaking'
+2026-10-29 09:38:58,336 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:38:58,339 | INFO     | tvmaze.automation | 3 of 10 show(s) meet minimum rating 4.5
+2026-10-29 09:38:58,339 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=Breaking&min_rating=4.5 HTTP/1.1" 200 -
+2026-10-29 09:39:08,262 | INFO     | tvmaze.api_client | Searching TVMaze for 'Game of Thrones'
+2026-10-29 09:39:09,387 | INFO     | tvmaze.api_client | API returned 4 result(s)
+2026-10-29 09:39:09,390 | INFO     | tvmaze.automation | 1 of 4 show(s) meet minimum rating 4.5
+2026-10-29 09:39:09,390 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=Game+of+Thrones&min_rating=4.5 HTTP/1.1" 200 -
+2026-10-29 09:44:18,858 | INFO     | tvmaze.api_client | Searching TVMaze for 'marvel'
+2026-10-29 09:44:20,285 | INFO     | tvmaze.api_client | API returned 10 result(s)
+2026-10-29 09:44:20,289 | INFO     | tvmaze.automation | 7 of 10 show(s) meet minimum rating 4.5
+2026-10-29 09:44:20,298 | INFO     | tvmaze.web_server | 127.0.0.1 - "GET /api/search?q=marvel&min_rating=4.5 HTTP/1.1" 200 -
