@@ -1,0 +1,22 @@
+[project]
+name = "tvmaze-show-finder"
+version = "1.0.0"
+description = "Search the TVMaze API and keep the shows that meet a minimum rating (AI Assisted Scripting lab project)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "mypy>=1.10", "types-requests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["tvmaze", "main"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
