@@ -22,8 +22,8 @@ def display_shows(shows, total_found):
     print(f"{'Show name':<{NAME_WIDTH}} {'Genre':<{GENRE_WIDTH}} {'Rating':>6}")
     print("-" * 73)
     for show in shows:
-        name = show.name[:NAME_WIDTH - 1]
-        genres = show.genre_text[:GENRE_WIDTH - 1]
+        name = show.name[: NAME_WIDTH - 1]
+        genres = show.genre_text[: GENRE_WIDTH - 1]
         print(f"{name:<{NAME_WIDTH}} {genres:<{GENRE_WIDTH}} {show.rating_text:>6}")
 
 

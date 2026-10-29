@@ -16,10 +16,19 @@ import requests
 from tvmaze.web_server import RequestHandler
 
 SEARCH_RESULTS = [
-    {"score": 0.9, "show": {"id": 335, "name": "Sherlock", "genres": ["Crime"],
-                            "rating": {"average": 8.9}}},
-    {"score": 0.8, "show": {"id": 1, "name": "Young Sherlock", "genres": ["Action"],
-                            "rating": {"average": 7.3}}},
+    {
+        "score": 0.9,
+        "show": {"id": 335, "name": "Sherlock", "genres": ["Crime"], "rating": {"average": 8.9}},
+    },
+    {
+        "score": 0.8,
+        "show": {
+            "id": 1,
+            "name": "Young Sherlock",
+            "genres": ["Action"],
+            "rating": {"average": 7.3},
+        },
+    },
 ]
 
 
@@ -83,9 +92,16 @@ def test_search_endpoint_flags_matching_shows(server):
     assert [show["meets_threshold"] for show in data["shows"]] == [True, False]
 
 
-@pytest.mark.parametrize("query", ["q=&min_rating=8", "q=x&min_rating=abc",
-                                   "q=x&min_rating=11", "q=x&mode=actor",
-                                   "q=sitcom&mode=genre"])
+@pytest.mark.parametrize(
+    "query",
+    [
+        "q=&min_rating=8",
+        "q=x&min_rating=abc",
+        "q=x&min_rating=11",
+        "q=x&mode=actor",
+        "q=sitcom&mode=genre",
+    ],
+)
 def test_invalid_search_requests_return_400(server, query):
     status, _, body = get(server + "/api/search?" + query)
     assert status == 400

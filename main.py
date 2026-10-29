@@ -45,10 +45,14 @@ def run_cli(config_path):
         ui.display_welcome()
         shows, matching_shows = automation.run(config)
         ui.display_shows(matching_shows, len(shows))
-        ui.display_summary(config.search_term, config.minimum_rating,
-                           len(shows), matching_shows, config.search_mode)
-        save_report(matching_shows, config.search_term, config.minimum_rating,
-                    config.output_file)
+        ui.display_summary(
+            config.search_term,
+            config.minimum_rating,
+            len(shows),
+            matching_shows,
+            config.search_mode,
+        )
+        save_report(matching_shows, config.search_term, config.minimum_rating, config.output_file)
         print(f"\nReport saved to {config.output_file}")
     except ConfigError as error:
         logger.error(error)
@@ -83,14 +87,20 @@ def run_web(config_path, port, open_browser):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="TVMaze Show Finder")
-    parser.add_argument("--cli", action="store_true",
-                        help="run the command-line automation instead of the web UI")
-    parser.add_argument("--config", default=DEFAULT_CONFIG,
-                        help="path to the configuration file (default: config.json)")
-    parser.add_argument("--port", type=int, default=DEFAULT_PORT,
-                        help=f"web UI port (default: {DEFAULT_PORT})")
-    parser.add_argument("--no-browser", action="store_true",
-                        help="don't open the web UI in a browser")
+    parser.add_argument(
+        "--cli", action="store_true", help="run the command-line automation instead of the web UI"
+    )
+    parser.add_argument(
+        "--config",
+        default=DEFAULT_CONFIG,
+        help="path to the configuration file (default: config.json)",
+    )
+    parser.add_argument(
+        "--port", type=int, default=DEFAULT_PORT, help=f"web UI port (default: {DEFAULT_PORT})"
+    )
+    parser.add_argument(
+        "--no-browser", action="store_true", help="don't open the web UI in a browser"
+    )
     return parser.parse_args()
 
 

@@ -20,7 +20,10 @@ CONFIG_DIR = Path(__file__).parent / "configs"
 
 SAMPLE_RESPONSE = [
     {"score": 0.9, "show": {"name": "Sherlock", "genres": ["Crime"], "rating": {"average": 8.9}}},
-    {"score": 0.8, "show": {"name": "Young Sherlock", "genres": ["Action"], "rating": {"average": 7.3}}},
+    {
+        "score": 0.8,
+        "show": {"name": "Young Sherlock", "genres": ["Action"], "rating": {"average": 7.3}},
+    },
     {"score": 0.7, "show": {"name": "Sherlock Hound", "genres": [], "rating": {"average": None}}},
 ]
 
@@ -34,7 +37,6 @@ def fake_get(payload):
 
 
 class ConfigTests(unittest.TestCase):
-
     def test_valid_config_loads(self):
         config = load_config(CONFIG_DIR / "valid.json")
         self.assertEqual(config, Config("doctor", 7.0, "tv_report.txt"))
@@ -49,7 +51,6 @@ class ConfigTests(unittest.TestCase):
 
 
 class ApiClientTests(unittest.TestCase):
-
     def test_valid_search_returns_show_objects(self):
         with mock.patch("requests.get", fake_get(SAMPLE_RESPONSE)):
             shows = api_client.search_shows("sherlock")
@@ -67,13 +68,11 @@ class ApiClientTests(unittest.TestCase):
 
     def test_api_failure_raises_request_exception(self):
         failing_get = mock.Mock(side_effect=requests.ConnectionError("no network"))
-        with mock.patch("requests.get", failing_get):
-            with self.assertRaises(requests.RequestException):
-                api_client.search_shows("sherlock")
+        with mock.patch("requests.get", failing_get), self.assertRaises(requests.RequestException):
+            api_client.search_shows("sherlock")
 
 
 class FilterTests(unittest.TestCase):
-
     def setUp(self):
         self.shows = [Show.from_api(result["show"]) for result in SAMPLE_RESPONSE]
 
@@ -91,7 +90,6 @@ class FilterTests(unittest.TestCase):
 
 
 class ReportTests(unittest.TestCase):
-
     def test_report_written(self):
         with tempfile.TemporaryDirectory() as folder:
             report_file = Path(folder) / "report.txt"
@@ -106,7 +104,6 @@ class ReportTests(unittest.TestCase):
 
 
 class WebServerTests(unittest.TestCase):
-
     def test_rating_must_be_between_0_and_10(self):
         self.assertEqual(web_server.parse_minimum_rating("7.5"), 7.5)
         for bad_value in ("abc", "11", "-1"):

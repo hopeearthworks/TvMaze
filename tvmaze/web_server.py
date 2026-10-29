@@ -47,7 +47,7 @@ def parse_minimum_rating(value):
     try:
         rating = float(value)
     except (TypeError, ValueError):
-        raise ValueError("Minimum rating must be a number")
+        raise ValueError("Minimum rating must be a number") from None
     if not 0 <= rating <= 10:
         raise ValueError("Minimum rating must be between 0 and 10")
     return rating
@@ -73,7 +73,7 @@ def build_search_response(search_term, minimum_rating, search_mode="name"):
     """Run the automation and shape the result for the UI."""
     shows = automation.search(search_term, search_mode)
     matching = automation.filter_by_rating(shows, minimum_rating)
-    average = (sum(show.rating for show in matching) / len(matching)) if matching else None
+    average = (sum(show.rating or 0 for show in matching) / len(matching)) if matching else None
     return {
         "search_term": search_term.strip(),
         "search_mode": search_mode,
@@ -89,7 +89,7 @@ def build_search_response(search_term, minimum_rating, search_mode="name"):
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    config_path = None  # Set by run_server.
+    config_path: Path | str = Path("config.json")  # Set by run_server.
 
     def do_GET(self):
         url = urlparse(self.path)
@@ -97,7 +97,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         if url.path == "/api/config":
             self.handle_config()
         elif url.path == "/api/search":
-            self.handle_api(lambda: self.send_json(build_search_response(*parse_search_query(query))))
+            self.handle_api(
+                lambda: self.send_json(build_search_response(*parse_search_query(query)))
+            )
         elif url.path == "/api/report":
             self.handle_api(lambda: self.handle_report(query))
         elif url.path == "/api/show":
@@ -109,9 +111,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         defaults = {"search_term": "", "search_mode": "name", "minimum_rating": 0}
         try:
             config = load_config(self.config_path)
-            defaults = {"search_term": config.search_term,
-                        "search_mode": config.search_mode,
-                        "minimum_rating": config.minimum_rating}
+            defaults = {
+                "search_term": config.search_term,
+                "search_mode": config.search_mode,
+                "minimum_rating": config.minimum_rating,
+            }
         except ConfigError as error:
             logger.error(error)
         self.send_json({**defaults, "genres": list(GENRES)})
@@ -124,7 +128,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             raise ValueError("Report format must be 'txt' or 'csv'")
 
         matching = automation.filter_by_rating(
-            automation.search(search_term, search_mode), minimum_rating)
+            automation.search(search_term, search_mode), minimum_rating
+        )
         if report_format == "csv":
             body, content_type = format_report_csv(matching), "text/csv; charset=utf-8"
         else:
@@ -133,8 +138,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         safe_name = re.sub(r"[^A-Za-z0-9-]+", "_", search_term.strip()).strip("_") or "shows"
         filename = f"tv_report_{safe_name}.{report_format}"
         logger.info("Report download: %s (%d show(s))", filename, len(matching))
-        self.send_bytes(body.encode("utf-8"), content_type,
-                        headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+        self.send_bytes(
+            body.encode("utf-8"),
+            content_type,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
 
     def handle_api(self, action):
         """Run an API action, turning errors into JSON error responses."""
@@ -149,16 +157,19 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.send_json({"error": "Show not found."}, HTTPStatus.NOT_FOUND)
                 return
             logger.error("Unable to retrieve TV show data: %s", error)
-            self.send_json({"error": "Unable to reach the TVMaze service. Please try again."},
-                           HTTPStatus.BAD_GATEWAY)
+            self.send_json(
+                {"error": "Unable to reach the TVMaze service. Please try again."},
+                HTTPStatus.BAD_GATEWAY,
+            )
         except requests.RequestException as error:
             logger.error("Unable to retrieve TV show data: %s", error)
-            self.send_json({"error": "Unable to reach the TVMaze service. Please try again."},
-                           HTTPStatus.BAD_GATEWAY)
+            self.send_json(
+                {"error": "Unable to reach the TVMaze service. Please try again."},
+                HTTPStatus.BAD_GATEWAY,
+            )
         except Exception:
             logger.exception("Unexpected error handling %s", self.path)
-            self.send_json({"error": "Unexpected server error."},
-                           HTTPStatus.INTERNAL_SERVER_ERROR)
+            self.send_json({"error": "Unexpected server error."}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     def serve_static(self, path):
         relative = "index.html" if path in ("", "/") else path.lstrip("/")
@@ -171,8 +182,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_bytes(file_path.read_bytes(), content_type)
 
     def send_json(self, payload, status=HTTPStatus.OK):
-        self.send_bytes(json.dumps(payload).encode("utf-8"),
-                        "application/json; charset=utf-8", status)
+        self.send_bytes(
+            json.dumps(payload).encode("utf-8"), "application/json; charset=utf-8", status
+        )
 
     def send_bytes(self, body, content_type, status=HTTPStatus.OK, headers=None):
         self.send_response(status)

@@ -9,10 +9,19 @@ import requests
 import main
 
 SEARCH_RESULTS = [
-    {"score": 0.9, "show": {"id": 335, "name": "Sherlock", "genres": ["Crime"],
-                            "rating": {"average": 8.9}}},
-    {"score": 0.8, "show": {"id": 1, "name": "Young Sherlock", "genres": ["Action"],
-                            "rating": {"average": 7.3}}},
+    {
+        "score": 0.9,
+        "show": {"id": 335, "name": "Sherlock", "genres": ["Crime"], "rating": {"average": 8.9}},
+    },
+    {
+        "score": 0.8,
+        "show": {
+            "id": 1,
+            "name": "Young Sherlock",
+            "genres": ["Action"],
+            "rating": {"average": 7.3},
+        },
+    },
 ]
 
 
@@ -26,11 +35,13 @@ def fake_get(payload):
 @pytest.fixture
 def write_config(tmp_path):
     """Write a config file into tmp_path and return its path."""
+
     def _write(**values):
         values.setdefault("output_file", str(tmp_path / "report.txt"))
         path = tmp_path / "config.json"
         path.write_text(json.dumps(values), encoding="utf-8")
         return path
+
     return _write
 
 
@@ -71,8 +82,11 @@ def test_api_failure_returns_error_code(write_config, caplog):
 
 
 def test_unwritable_report_returns_error_code(write_config, tmp_path, caplog):
-    config = write_config(search_term="sherlock", minimum_rating=8,
-                          output_file=str(tmp_path / "no_such_folder" / "report.txt"))
+    config = write_config(
+        search_term="sherlock",
+        minimum_rating=8,
+        output_file=str(tmp_path / "no_such_folder" / "report.txt"),
+    )
     with mock.patch("requests.get", fake_get(SEARCH_RESULTS)):
         assert main.run_cli(config) == 1
     assert "Unable to create report file" in caplog.text

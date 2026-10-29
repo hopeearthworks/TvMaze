@@ -12,10 +12,17 @@ SHOW_WITH_EMBEDS = {
     "name": "Sherlock",
     "_embedded": {
         "cast": [
-            {"person": {"name": "Benedict Cumberbatch", "image": {"medium": "http://img/bc.jpg"}},
-             "character": {"name": "Sherlock Holmes"}},
-            {"person": {"name": "Martin Freeman", "image": None},
-             "character": {"name": "Dr John Watson"}},
+            {
+                "person": {
+                    "name": "Benedict Cumberbatch",
+                    "image": {"medium": "http://img/bc.jpg"},
+                },
+                "character": {"name": "Sherlock Holmes"},
+            },
+            {
+                "person": {"name": "Martin Freeman", "image": None},
+                "character": {"name": "Dr John Watson"},
+            },
         ],
         "nextepisode": {"name": "The Return", "season": 5, "number": 1, "airdate": "2027-01-01"},
     },
@@ -33,8 +40,11 @@ def test_show_details_extracts_cast_and_next_episode():
     with mock.patch("requests.get", fake_get(SHOW_WITH_EMBEDS)) as get:
         details = api_client.get_show_details(335)
     assert get.call_args.kwargs["params"] == {"embed[]": ["cast", "nextepisode"]}
-    assert details["cast"][0] == {"name": "Benedict Cumberbatch", "character": "Sherlock Holmes",
-                                  "image": "http://img/bc.jpg"}
+    assert details["cast"][0] == {
+        "name": "Benedict Cumberbatch",
+        "character": "Sherlock Holmes",
+        "image": "http://img/bc.jpg",
+    }
     assert details["cast"][1]["image"] is None
     assert details["next_episode"]["season"] == 5
 

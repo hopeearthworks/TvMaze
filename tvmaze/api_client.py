@@ -101,8 +101,7 @@ def get_show_details(show_id: int, max_cast: int = 12) -> dict[str, Any]:
     Raises requests.RequestException if the API cannot be reached (an
     unknown ID gives a 404 HTTPError).
     """
-    data = get_json(f"{SHOW_INDEX_URL}/{int(show_id)}",
-                    {"embed[]": ["cast", "nextepisode"]})
+    data = get_json(f"{SHOW_INDEX_URL}/{int(show_id)}", {"embed[]": ["cast", "nextepisode"]})
     embedded = data.get("_embedded") or {}
     cast = [
         {
@@ -113,12 +112,16 @@ def get_show_details(show_id: int, max_cast: int = 12) -> dict[str, Any]:
         for member in (embedded.get("cast") or [])[:max_cast]
     ]
     episode = embedded.get("nextepisode")
-    next_episode = {
-        "name": episode.get("name"),
-        "season": episode.get("season"),
-        "number": episode.get("number"),
-        "airdate": episode.get("airdate"),
-    } if episode else None
+    next_episode = (
+        {
+            "name": episode.get("name"),
+            "season": episode.get("season"),
+            "number": episode.get("number"),
+            "airdate": episode.get("airdate"),
+        }
+        if episode
+        else None
+    )
     return {"id": data.get("id"), "cast": cast, "next_episode": next_episode}
 
 

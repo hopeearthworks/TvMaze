@@ -8,7 +8,7 @@ from tvmaze.report import format_report_csv, format_report_text
 
 SHOWS = [
     Show("Sherlock", ["Crime", "Drama"], 8.9, premiered="2010-07-25", network="BBC One"),
-    Show("=HYPERLINK(\"http://evil\")", [], None),
+    Show('=HYPERLINK("http://evil")', [], None),
 ]
 
 

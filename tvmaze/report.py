@@ -44,20 +44,23 @@ def format_report_csv(shows: list[Show]) -> str:
     writer = csv.writer(buffer)
     writer.writerow(CSV_COLUMNS)
     for show in shows:
-        writer.writerow([
-            _safe_cell(show.name),
-            _safe_cell("; ".join(show.genres)),
-            show.rating if show.rating is not None else "",
-            _safe_cell(show.premiered),
-            _safe_cell(show.network),
-            _safe_cell(show.status),
-            _safe_cell(show.url),
-        ])
+        writer.writerow(
+            [
+                _safe_cell(show.name),
+                _safe_cell("; ".join(show.genres)),
+                show.rating if show.rating is not None else "",
+                _safe_cell(show.premiered),
+                _safe_cell(show.network),
+                _safe_cell(show.status),
+                _safe_cell(show.url),
+            ]
+        )
     return buffer.getvalue()
 
 
-def save_report(shows: list[Show], search_term: str, minimum_rating: float,
-                report_file: Path | str) -> None:
+def save_report(
+    shows: list[Show], search_term: str, minimum_rating: float, report_file: Path | str
+) -> None:
     """Write the plain-text report to report_file.
 
     Raises OSError if the file cannot be created.

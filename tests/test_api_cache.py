@@ -22,7 +22,10 @@ def test_repeat_search_is_served_from_cache():
 
 def test_expired_cache_entry_is_refetched():
     fake_get = mock.Mock(return_value=make_response([]))
-    with mock.patch("requests.get", fake_get), mock.patch.object(api_client, "CACHE_TTL_SECONDS", 0):
+    with (
+        mock.patch("requests.get", fake_get),
+        mock.patch.object(api_client, "CACHE_TTL_SECONDS", 0),
+    ):
         api_client.search_shows("sherlock")
         api_client.search_shows("sherlock")
     assert fake_get.call_count == 2

@@ -32,9 +32,9 @@ def load_config(config_path: Path | str) -> Config:
         with open(config_path, encoding="utf-8") as config_file:
             raw = json.load(config_file)
     except FileNotFoundError:
-        raise ConfigError(f"Configuration file not found: {config_path}")
+        raise ConfigError(f"Configuration file not found: {config_path}") from None
     except json.JSONDecodeError as error:
-        raise ConfigError(f"Configuration file is not valid JSON: {error}")
+        raise ConfigError(f"Configuration file is not valid JSON: {error}") from error
 
     search_mode = str(raw.get("search_mode", "name")).strip().lower()
     if search_mode not in SEARCH_MODES:
@@ -47,12 +47,12 @@ def load_config(config_path: Path | str) -> Config:
         try:
             search_term = normalise_genre(search_term)
         except ValueError as error:
-            raise ConfigError(str(error))
+            raise ConfigError(str(error)) from error
 
     try:
         minimum_rating = float(raw.get("minimum_rating", 0))
     except (TypeError, ValueError):
-        raise ConfigError("'minimum_rating' must be a number")
+        raise ConfigError("'minimum_rating' must be a number") from None
     if not 0 <= minimum_rating <= 10:
         raise ConfigError("'minimum_rating' must be between 0 and 10")
 
