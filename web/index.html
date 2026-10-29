@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TVMaze Show Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand sticky-top glass-nav">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="/">
+        <span class="brand-mark"><i class="bi bi-tv"></i></span>
+        <span>Show<span class="text-gradient">Finder</span></span>
+      </a>
+      <div class="d-flex align-items-center gap-2">
+        <a class="btn btn-sm btn-ghost d-none d-sm-inline-flex" href="https://www.tvmaze.com/api" target="_blank" rel="noopener">
+          <i class="bi bi-braces me-1"></i>TVMaze API
+        </a>
+        <button id="themeToggle" class="btn btn-sm btn-ghost" type="button" aria-label="Toggle colour theme">
+          <i class="bi bi-sun"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container pb-5">
+    <!-- Hero + search -->
+    <section class="hero text-center">
+      <span class="badge rounded-pill hero-badge mb-3"><i class="bi bi-stars me-1"></i>Live TV data from TVMaze</span>
+      <h1 class="display-5 fw-bolder mb-3">Find your next <span class="text-gradient">great show</span></h1>
+      <p class="lead text-body-secondary mb-4 mx-auto hero-lead">
+        Search thousands of programmes and keep only the ones that meet your rating bar.
+      </p>
+
+      <form id="searchForm" class="search-card mx-auto text-start" novalidate>
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-md-6">
+            <label for="searchInput" class="form-label small fw-semibold text-body-secondary">Search term</label>
+            <div class="input-group input-group-lg search-input">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input id="searchInput" type="search" class="form-control" placeholder="e.g. Sherlock, Doctor, Office" autocomplete="off" required>
+              <span class="input-group-text kbd-hint d-none d-lg-flex"><kbd>/</kbd></span>
+            </div>
+            <div class="invalid-feedback d-block small mt-1" id="searchError" hidden>Please enter a search term.</div>
+          </div>
+          <div class="col-8 col-md-4">
+            <label for="ratingRange" class="form-label small fw-semibold text-body-secondary d-flex justify-content-between">
+              <span>Minimum rating</span>
+              <span class="rating-value"><i class="bi bi-star-fill"></i> <span id="ratingValue">8.0</span></span>
+            </label>
+            <input id="ratingRange" type="range" class="form-range" min="0" max="10" step="0.5" value="8">
+          </div>
+          <div class="col-4 col-md-2 d-grid">
+            <button id="searchButton" type="submit" class="btn btn-lg btn-gradient">
+              <span class="btn-label">Search</span>
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+          <span class="small text-body-secondary me-1">Try:</span>
+          <button type="button" class="btn btn-sm chip quick-search">Doctor</button>
+          <button type="button" class="btn btn-sm chip quick-search">Sherlock</button>
+          <button type="button" class="btn btn-sm chip quick-search">Office</button>
+          <button type="button" class="btn btn-sm chip quick-search">Breaking</button>
+          <button type="button" class="btn btn-sm chip quick-search">Star</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Stats -->
+    <section id="statsSection" class="row g-3 mb-4" hidden>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-search"></i></div>
+          <div><div class="stat-label">Search term</div><div class="stat-value text-truncate" id="statTerm">-</div></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-collection-play"></i></div>
+          <div><div class="stat-label">Shows found</div><div class="stat-value" id="statFound">0</div></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
+          <div><div class="stat-label">Meet threshold</div><div class="stat-value" id="statMatching">0</div></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-star-half"></i></div>
+          <div><div class="stat-label">Average rating</div><div class="stat-value" id="statAverage">-</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section id="toolbar" class="toolbar d-flex flex-wrap align-items-center gap-3 mb-4" hidden>
+      <div id="genreFilters" class="d-flex flex-wrap gap-2 flex-grow-1"></div>
+      <div class="form-check form-switch mb-0">
+        <input class="form-check-input" type="checkbox" role="switch" id="showAllSwitch">
+        <label class="form-check-label small" for="showAllSwitch">Show all results</label>
+      </div>
+      <select id="sortSelect" class="form-select form-select-sm w-auto" aria-label="Sort results">
+        <option value="rating">Highest rated</option>
+        <option value="name">Name A–Z</option>
+        <option value="newest">Newest first</option>
+        <option value="relevance">Relevance</option>
+      </select>
+    </section>
+
+    <!-- Results -->
+    <section id="results" class="row g-4" aria-live="polite"></section>
+
+    <!-- Empty / initial state -->
+    <section id="emptyState" class="empty-state text-center">
+      <div class="empty-icon"><i class="bi bi-film"></i></div>
+      <h2 class="h5 fw-bold">Start with a search</h2>
+      <p class="text-body-secondary mb-0">Results show up here, with posters, genres and ratings.</p>
+    </section>
+  </main>
+
+  <footer class="text-center small text-body-secondary py-4">
+    Data provided by <a href="https://www.tvmaze.com" target="_blank" rel="noopener">TVMaze</a> · AI Assisted Scripting lab project
+  </footer>
+
+  <!-- Show details modal -->
+  <div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="showModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content show-modal">
+        <div class="modal-body p-0">
+          <div class="row g-0">
+            <div class="col-md-4 modal-poster-wrap">
+              <img id="modalPoster" class="modal-poster" alt="">
+            </div>
+            <div class="col-md-8 p-4">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h2 class="h4 fw-bold mb-0" id="showModalTitle"></h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div id="modalMeta" class="d-flex flex-wrap gap-2 mb-3"></div>
+              <div id="modalGenres" class="d-flex flex-wrap gap-2 mb-3"></div>
+              <p id="modalSummary" class="text-body-secondary modal-summary"></p>
+              <a id="modalLink" class="btn btn-gradient" target="_blank" rel="noopener">
+                View on TVMaze <i class="bi bi-box-arrow-up-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="errorToast" class="toast align-items-center border-0 text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body"><i class="bi bi-exclamation-triangle me-2"></i><span id="errorToastMessage"></span></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
