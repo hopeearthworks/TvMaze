@@ -34,6 +34,11 @@
     loadMoreCount: document.getElementById("loadMoreCount"),
     downloadTxt: document.getElementById("downloadTxt"),
     downloadCsv: document.getElementById("downloadCsv"),
+    watchCount: document.getElementById("watchlistCount"),
+    watchPanel: document.getElementById("watchlistPanel"),
+    watchItems: document.getElementById("watchlistItems"),
+    watchEmpty: document.getElementById("watchlistEmpty"),
+    watchClear: document.getElementById("watchlistClear"),
   };
 
   const PAGE_SIZE = 48;
@@ -47,7 +52,9 @@
     summary: document.getElementById("modalSummary"),
     extras: document.getElementById("modalExtras"),
     link: document.getElementById("modalLink"),
-    showId: null, // show currently displayed
+    watchButton: document.getElementById("modalWatchButton"),
+    show: null,   // show currently displayed
+    showId: null,
   };
 
   const errorToast = new bootstrap.Toast(elements.toast, { delay: 6000 });
@@ -82,6 +89,90 @@
   function showError(message) {
     elements.toastMessage.textContent = message;
     errorToast.show();
+  }
+
+  /* ---------- Watchlist (saved in this browser only) ---------- */
+
+  const WATCHLIST_KEY = "sf-watchlist";
+  const showKey = (show) => String(show.id ?? show.name);
+
+  function loadWatchlist() {
+    try {
+      const saved = JSON.parse(storage.get(WATCHLIST_KEY) || "[]");
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  }
+
+  let watchlist = loadWatchlist();
+  const isSaved = (show) => watchlist.some((item) => showKey(item) === showKey(show));
+
+  function saveWatchlist() {
+    storage.set(WATCHLIST_KEY, JSON.stringify(watchlist));
+    renderWatchlist();
+    syncWatchButtons();
+  }
+
+  function toggleWatch(show) {
+    if (isSaved(show)) {
+      watchlist = watchlist.filter((item) => showKey(item) !== showKey(show));
+    } else {
+      // Store a snapshot without search-specific fields.
+      const { meets_threshold, ...snapshot } = show;
+      watchlist = [snapshot, ...watchlist];
+    }
+    saveWatchlist();
+  }
+
+  function watchButtonHtml(show) {
+    const saved = isSaved(show);
+    return `<button type="button" class="watch-toggle ${saved ? "saved" : ""}" data-key="${escapeHtml(showKey(show))}"
+              aria-pressed="${saved}" aria-label="${saved ? "Remove from" : "Add to"} watchlist">
+              <i class="bi ${saved ? "bi-bookmark-heart-fill" : "bi-bookmark"}"></i></button>`;
+  }
+
+  // Update bookmark buttons in place after the watchlist changes.
+  function syncWatchButtons() {
+    elements.results.querySelectorAll(".watch-toggle").forEach((button) => {
+      const show = state.shows.find((item) => showKey(item) === button.dataset.key);
+      if (show) button.outerHTML = watchButtonHtml(show);
+    });
+    if (modal.show) updateModalWatchButton();
+  }
+
+  function updateModalWatchButton() {
+    const saved = isSaved(modal.show);
+    modal.watchButton.innerHTML = saved
+      ? '<i class="bi bi-bookmark-heart-fill me-1"></i>In watchlist'
+      : '<i class="bi bi-bookmark-plus me-1"></i>Add to watchlist';
+    modal.watchButton.setAttribute("aria-pressed", String(saved));
+  }
+
+  function renderWatchlist() {
+    elements.watchCount.textContent = watchlist.length;
+    elements.watchEmpty.hidden = watchlist.length > 0;
+    elements.watchClear.hidden = watchlist.length === 0;
+    elements.watchItems.innerHTML = watchlist.map((show) => {
+      const thumb = show.image
+        ? `<img src="${escapeHtml(show.image)}" alt="" loading="lazy">`
+        : '<span class="watch-thumb"><i class="bi bi-film"></i></span>';
+      const rating = show.rating !== null ? `★ ${show.rating.toFixed(1)}` : "Unrated";
+      const meta = [rating, year(show), show.network].filter(Boolean).map(escapeHtml).join(" · ");
+      return `
+        <div class="watch-item">
+          <button type="button" class="watch-open" data-key="${escapeHtml(showKey(show))}">
+            ${thumb}
+            <span class="watch-info">
+              <span class="watch-name d-block text-truncate">${escapeHtml(show.name)}</span>
+              <span class="watch-meta d-block">${meta}</span>
+            </span>
+          </button>
+          <button type="button" class="watch-remove" data-key="${escapeHtml(showKey(show))}" aria-label="Remove ${escapeHtml(show.name)}">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>`;
+    }).join("");
   }
 
   /* ---------- Search mode ---------- */
@@ -214,7 +305,7 @@
         <article class="show-card ${meets ? "" : "below-threshold"}" tabindex="0" role="button"
                  data-index="${state.shows.indexOf(show)}" style="animation-delay:${Math.min(index * 40, 400)}ms"
                  aria-label="${escapeHtml(show.name)} details">
-          <div class="poster-wrap">${poster}${rating}${status}</div>
+          <div class="poster-wrap">${poster}${watchButtonHtml(show)}${rating}${status}</div>
           <div class="show-body">
             <h3 class="show-title">${escapeHtml(show.name)}</h3>
             <div class="show-meta mb-2">${meta}</div>
@@ -279,7 +370,9 @@
     modal.summary.textContent = show.summary || "No summary available.";
     modal.link.hidden = !show.url;
     if (show.url) modal.link.href = show.url;
+    modal.show = show;
     modal.showId = show.id;
+    updateModalWatchButton();
     modal.extras.innerHTML = show.id
       ? '<div class="small text-body-secondary"><span class="spinner-border spinner-border-sm me-2"></span>Loading cast…</div>'
       : "";
@@ -468,10 +561,14 @@
 
   elements.results.addEventListener("click", (event) => {
     const card = event.target.closest(".show-card");
-    if (card) openModal(state.shows[Number(card.dataset.index)]);
+    if (!card) return;
+    const show = state.shows[Number(card.dataset.index)];
+    if (event.target.closest(".watch-toggle")) toggleWatch(show);
+    else openModal(show);
   });
   elements.results.addEventListener("keydown", (event) => {
     const card = event.target.closest(".show-card");
+    if (event.target.closest(".watch-toggle")) return; // Let the button handle its own keys.
     if (card && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
       openModal(state.shows[Number(card.dataset.index)]);
@@ -487,6 +584,28 @@
     }
   });
 
+  modal.watchButton.addEventListener("click", () => toggleWatch(modal.show));
+
+  elements.watchItems.addEventListener("click", (event) => {
+    const remove = event.target.closest(".watch-remove");
+    const open = event.target.closest(".watch-open");
+    const key = (remove || open)?.dataset.key;
+    const show = watchlist.find((item) => showKey(item) === key);
+    if (!show) return;
+    if (remove) {
+      toggleWatch(show);
+    } else {
+      bootstrap.Offcanvas.getOrCreateInstance(elements.watchPanel).hide();
+      openModal(show);
+    }
+  });
+
+  elements.watchClear.addEventListener("click", () => {
+    watchlist = [];
+    saveWatchlist();
+  });
+
   initTheme();
+  renderWatchlist();
   loadDefaults();
 })();

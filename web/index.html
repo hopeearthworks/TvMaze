@@ -22,7 +22,11 @@
         <span>Show<span class="text-gradient">Finder</span></span>
       </a>
       <div class="d-flex align-items-center gap-2">
-        <a class="btn btn-sm btn-ghost d-none d-sm-inline-flex" href="https://www.tvmaze.com/api" target="_blank" rel="noopener">
+        <button class="btn btn-sm btn-ghost d-inline-flex" type="button" data-bs-toggle="offcanvas" data-bs-target="#watchlistPanel" aria-controls="watchlistPanel">
+          <i class="bi bi-bookmark-heart me-1"></i>Watchlist
+          <span id="watchlistCount" class="badge rounded-pill watch-count ms-1">0</span>
+        </button>
+        <a class="btn btn-sm btn-ghost d-none d-md-inline-flex" href="https://www.tvmaze.com/api" target="_blank" rel="noopener">
           <i class="bi bi-braces me-1"></i>TVMaze API
         </a>
         <button id="themeToggle" class="btn btn-sm btn-ghost" type="button" aria-label="Toggle colour theme">
@@ -180,13 +184,34 @@
               <div id="modalGenres" class="d-flex flex-wrap gap-2 mb-3"></div>
               <p id="modalSummary" class="text-body-secondary modal-summary"></p>
               <div id="modalExtras" class="mb-3"></div>
-              <a id="modalLink" class="btn btn-gradient" target="_blank" rel="noopener">
-                View on TVMaze <i class="bi bi-box-arrow-up-right ms-1"></i>
-              </a>
+              <div class="d-flex flex-wrap gap-2">
+                <a id="modalLink" class="btn btn-gradient" target="_blank" rel="noopener">
+                  View on TVMaze <i class="bi bi-box-arrow-up-right ms-1"></i>
+                </a>
+                <button id="modalWatchButton" type="button" class="btn btn-ghost"></button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Watchlist panel -->
+  <div class="offcanvas offcanvas-end watchlist-panel" tabindex="-1" id="watchlistPanel" aria-labelledby="watchlistTitle">
+    <div class="offcanvas-header">
+      <h2 class="offcanvas-title h5 fw-bold" id="watchlistTitle"><i class="bi bi-bookmark-heart me-2 text-gradient"></i>My watchlist</h2>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="watchlistItems" class="d-flex flex-column gap-2"></div>
+      <div id="watchlistEmpty" class="text-center text-body-secondary py-5">
+        <i class="bi bi-bookmark fs-2 d-block mb-2"></i>
+        Nothing saved yet. Tap <i class="bi bi-bookmark"></i> on any show to add it.
+      </div>
+      <button id="watchlistClear" type="button" class="btn btn-sm btn-ghost w-100 mt-3" hidden>
+        <i class="bi bi-trash3 me-1"></i>Clear watchlist
+      </button>
     </div>
   </div>
 
