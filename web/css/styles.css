@@ -227,6 +227,15 @@ a { color: var(--sf-accent-2); }
 }
 .form-check-input:checked { background-color: var(--sf-accent-1); border-color: var(--sf-accent-1); }
 
+.dropdown-menu {
+  border-radius: 0.9rem;
+  border: 1px solid var(--sf-border);
+  box-shadow: var(--sf-shadow);
+  padding: 0.4rem;
+}
+.dropdown-item { border-radius: 0.6rem; font-size: 0.875rem; padding: 0.45rem 0.75rem; }
+.dropdown-item:active { background: var(--sf-gradient); }
+
 /* Show cards */
 .show-card {
   position: relative;

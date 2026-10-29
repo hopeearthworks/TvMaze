@@ -6,11 +6,14 @@ Endpoints:
                             plus the list of genres
     GET /api/search?q=<term>&min_rating=<0-10>&mode=<name|genre>
                          -> shows found, with a flag for those meeting the rating
+    GET /api/report?<same as search>&format=<txt|csv>
+                         -> the matching shows as a downloadable report
 """
 
 import json
 import logging
 import mimetypes
+import re
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -21,6 +24,7 @@ import requests
 from tvmaze import automation
 from tvmaze.config import SEARCH_MODES, ConfigError, load_config
 from tvmaze.models import GENRES
+from tvmaze.report import format_report_csv, format_report_text
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
@@ -44,6 +48,14 @@ def parse_minimum_rating(value):
     if not 0 <= rating <= 10:
         raise ValueError("Minimum rating must be between 0 and 10")
     return rating
+
+
+def parse_search_query(query):
+    """Return (search_term, minimum_rating, search_mode) from the query string."""
+    search_term = query.get("q", [""])[0]
+    minimum_rating = parse_minimum_rating(query.get("min_rating", ["0"])[0])
+    search_mode = parse_search_mode(query.get("mode", ["name"])[0])
+    return search_term, minimum_rating, search_mode
 
 
 def build_search_response(search_term, minimum_rating, search_mode="name"):
@@ -70,10 +82,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = urlparse(self.path)
+        query = parse_qs(url.query)
         if url.path == "/api/config":
             self.handle_config()
         elif url.path == "/api/search":
-            self.handle_search(parse_qs(url.query))
+            self.handle_api(lambda: self.send_json(build_search_response(*parse_search_query(query))))
+        elif url.path == "/api/report":
+            self.handle_api(lambda: self.handle_report(query))
         else:
             self.serve_static(url.path)
 
@@ -88,21 +103,39 @@ class RequestHandler(BaseHTTPRequestHandler):
             logger.error(error)
         self.send_json({**defaults, "genres": list(GENRES)})
 
-    def handle_search(self, query):
-        search_term = query.get("q", [""])[0]
+    def handle_report(self, query):
+        """Send the matching shows as a downloadable .txt or .csv report."""
+        search_term, minimum_rating, search_mode = parse_search_query(query)
+        report_format = query.get("format", ["txt"])[0].lower()
+        if report_format not in ("txt", "csv"):
+            raise ValueError("Report format must be 'txt' or 'csv'")
+
+        matching = automation.filter_by_rating(
+            automation.search(search_term, search_mode), minimum_rating)
+        if report_format == "csv":
+            body, content_type = format_report_csv(matching), "text/csv; charset=utf-8"
+        else:
+            body = format_report_text(matching, search_term.strip(), minimum_rating)
+            content_type = "text/plain; charset=utf-8"
+        safe_name = re.sub(r"[^A-Za-z0-9-]+", "_", search_term.strip()).strip("_") or "shows"
+        filename = f"tv_report_{safe_name}.{report_format}"
+        logger.info("Report download: %s (%d show(s))", filename, len(matching))
+        self.send_bytes(body.encode("utf-8"), content_type,
+                        headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+    def handle_api(self, action):
+        """Run an API action, turning errors into JSON error responses."""
         try:
-            search_mode = parse_search_mode(query.get("mode", ["name"])[0])
-            minimum_rating = parse_minimum_rating(query.get("min_rating", ["0"])[0])
-            self.send_json(build_search_response(search_term, minimum_rating, search_mode))
+            action()
         except ValueError as error:
-            logger.error("Invalid search request: %s", error)
+            logger.error("Invalid request: %s", error)
             self.send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)
         except requests.RequestException as error:
             logger.error("Unable to retrieve TV show data: %s", error)
             self.send_json({"error": "Unable to reach the TVMaze service. Please try again."},
                            HTTPStatus.BAD_GATEWAY)
         except Exception:
-            logger.exception("Unexpected error during search")
+            logger.exception("Unexpected error handling %s", self.path)
             self.send_json({"error": "Unexpected server error."},
                            HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -120,10 +153,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_bytes(json.dumps(payload).encode("utf-8"),
                         "application/json; charset=utf-8", status)
 
-    def send_bytes(self, body, content_type, status=HTTPStatus.OK):
+    def send_bytes(self, body, content_type, status=HTTPStatus.OK, headers=None):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        for name, value in (headers or {}).items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
 

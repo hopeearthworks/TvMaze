@@ -32,6 +32,8 @@
     loadMoreWrap: document.getElementById("loadMoreWrap"),
     loadMoreButton: document.getElementById("loadMoreButton"),
     loadMoreCount: document.getElementById("loadMoreCount"),
+    downloadTxt: document.getElementById("downloadTxt"),
+    downloadCsv: document.getElementById("downloadCsv"),
   };
 
   const PAGE_SIZE = 48;
@@ -319,6 +321,9 @@
       state.searchMode = data.search_mode;
       state.shows = data.shows;
       state.summary = data;
+      // The server builds the report from the same search (tvmaze/report.py).
+      elements.downloadTxt.href = `/api/report?${params}&format=txt`;
+      elements.downloadCsv.href = `/api/report?${params}&format=csv`;
       if (!refresh) state.genre = null;
       state.loaded = true;
       resetAndRender();
