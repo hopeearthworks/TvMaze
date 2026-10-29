@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environment
+.venv/
+
+# Runtime output (sample copies are kept in docs/evidence/)
+automation.log
+automation.log.*
+tv_report.txt
+.cache/
+
+# IDE (personal settings)
+.idea/workspace.xml
+.idea/shelf/
