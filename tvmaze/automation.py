@@ -2,12 +2,21 @@
 
 import logging
 
-from tvmaze.api_client import search_shows
+from tvmaze.api_client import search_by_genre, search_shows
+from tvmaze.config import Config
+from tvmaze.models import Show
 
 logger = logging.getLogger(__name__)
 
 
-def filter_by_rating(shows, minimum_rating):
+def search(search_term: str, search_mode: str = "name") -> list[Show]:
+    """Search by show title ("name") or by genre ("genre")."""
+    if search_mode == "genre":
+        return search_by_genre(search_term)
+    return search_shows(search_term)
+
+
+def filter_by_rating(shows: list[Show], minimum_rating: float) -> list[Show]:
     """Return the shows rated at or above minimum_rating (unrated shows are excluded)."""
     matching = [show for show in shows
                 if show.rating is not None and show.rating >= minimum_rating]
@@ -16,7 +25,7 @@ def filter_by_rating(shows, minimum_rating):
     return matching
 
 
-def run(config):
+def run(config: Config) -> tuple[list[Show], list[Show]]:
     """Search using the config values and return (all_shows, matching_shows)."""
-    shows = search_shows(config.search_term)
+    shows = search(config.search_term, config.search_mode)
     return shows, filter_by_rating(shows, config.minimum_rating)

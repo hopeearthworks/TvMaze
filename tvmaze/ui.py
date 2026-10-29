@@ -27,12 +27,12 @@ def display_shows(shows, total_found):
         print(f"{name:<{NAME_WIDTH}} {genres:<{GENRE_WIDTH}} {show.rating_text:>6}")
 
 
-def display_summary(search_term, minimum_rating, total_found, matching_shows):
+def display_summary(search_term, minimum_rating, total_found, matching_shows, search_mode="name"):
     """Print a short summary of the run."""
     print()
     print("Summary")
     print("-" * 73)
-    print(f"Search term      : {search_term}")
+    print(f"Search {'genre' if search_mode == 'genre' else 'term':<10}: {search_term}")
     print(f"Minimum rating   : {minimum_rating}")
     print(f"Shows found      : {total_found}")
     print(f"Meet threshold   : {len(matching_shows)}")

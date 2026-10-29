@@ -46,7 +46,7 @@ def run_cli(config_path):
         shows, matching_shows = automation.run(config)
         ui.display_shows(matching_shows, len(shows))
         ui.display_summary(config.search_term, config.minimum_rating,
-                           len(shows), matching_shows)
+                           len(shows), matching_shows, config.search_mode)
         save_report(matching_shows, config.search_term, config.minimum_rating,
                     config.output_file)
         print(f"\nReport saved to {config.output_file}")

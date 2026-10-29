@@ -135,6 +135,25 @@ a { color: var(--sf-accent-2); }
   font-size: 0.75rem;
 }
 
+.search-input .form-select {
+  background-color: var(--sf-surface-strong);
+  border-color: var(--sf-border);
+}
+.search-input .form-select:focus { box-shadow: none; border-color: var(--sf-accent-1); }
+
+.mode-toggle .btn {
+  border: 1px solid var(--sf-border);
+  background: var(--sf-surface-strong);
+  color: var(--bs-secondary-color);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.mode-toggle .btn-check:checked + .btn {
+  background: var(--sf-gradient);
+  border-color: transparent;
+  color: #fff;
+}
+
 .rating-value { color: var(--sf-accent-3); font-weight: 700; }
 
 .form-range::-webkit-slider-thumb { background: var(--sf-gradient); }

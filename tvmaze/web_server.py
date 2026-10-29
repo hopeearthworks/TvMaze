@@ -2,8 +2,9 @@
 
 Endpoints:
     GET /                -> web/index.html (plus /css, /js static files)
-    GET /api/config      -> default search term and rating from config.json
-    GET /api/search?q=<term>&min_rating=<0-10>
+    GET /api/config      -> default search term, mode and rating from config.json,
+                            plus the list of genres
+    GET /api/search?q=<term>&min_rating=<0-10>&mode=<name|genre>
                          -> shows found, with a flag for those meeting the rating
 """
 
@@ -18,12 +19,20 @@ from urllib.parse import parse_qs, urlparse
 import requests
 
 from tvmaze import automation
-from tvmaze.api_client import search_shows
-from tvmaze.config import ConfigError, load_config
+from tvmaze.config import SEARCH_MODES, ConfigError, load_config
+from tvmaze.models import GENRES
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
 logger = logging.getLogger(__name__)
+
+
+def parse_search_mode(value):
+    """Validate the mode query value ("name" or "genre")."""
+    mode = (value or "name").strip().lower()
+    if mode not in SEARCH_MODES:
+        raise ValueError(f"Search mode must be one of: {', '.join(SEARCH_MODES)}")
+    return mode
 
 
 def parse_minimum_rating(value):
@@ -37,13 +46,14 @@ def parse_minimum_rating(value):
     return rating
 
 
-def build_search_response(search_term, minimum_rating):
+def build_search_response(search_term, minimum_rating, search_mode="name"):
     """Run the automation and shape the result for the UI."""
-    shows = search_shows(search_term)
+    shows = automation.search(search_term, search_mode)
     matching = automation.filter_by_rating(shows, minimum_rating)
     average = (sum(show.rating for show in matching) / len(matching)) if matching else None
     return {
         "search_term": search_term.strip(),
+        "search_mode": search_mode,
         "minimum_rating": minimum_rating,
         "total_found": len(shows),
         "matching_count": len(matching),
@@ -65,20 +75,22 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.serve_static(url.path)
 
     def handle_config(self):
+        defaults = {"search_term": "", "search_mode": "name", "minimum_rating": 0}
         try:
             config = load_config(self.config_path)
+            defaults = {"search_term": config.search_term,
+                        "search_mode": config.search_mode,
+                        "minimum_rating": config.minimum_rating}
         except ConfigError as error:
             logger.error(error)
-            self.send_json({"search_term": "", "minimum_rating": 0})
-            return
-        self.send_json({"search_term": config.search_term,
-                        "minimum_rating": config.minimum_rating})
+        self.send_json({**defaults, "genres": list(GENRES)})
 
     def handle_search(self, query):
         search_term = query.get("q", [""])[0]
         try:
+            search_mode = parse_search_mode(query.get("mode", ["name"])[0])
             minimum_rating = parse_minimum_rating(query.get("min_rating", ["0"])[0])
-            self.send_json(build_search_response(search_term, minimum_rating))
+            self.send_json(build_search_response(search_term, minimum_rating, search_mode))
         except ValueError as error:
             logger.error("Invalid search request: %s", error)
             self.send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)

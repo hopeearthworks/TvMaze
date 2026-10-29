@@ -23,7 +23,18 @@
     themeToggle: document.getElementById("themeToggle"),
     toast: document.getElementById("errorToast"),
     toastMessage: document.getElementById("errorToastMessage"),
+    modeInputs: document.querySelectorAll('input[name="searchMode"]'),
+    searchLabel: document.getElementById("searchLabel"),
+    nameGroup: document.getElementById("nameInputGroup"),
+    genreGroup: document.getElementById("genreInputGroup"),
+    genreSelect: document.getElementById("genreSelect"),
+    statTermLabel: document.getElementById("statTermLabel"),
+    loadMoreWrap: document.getElementById("loadMoreWrap"),
+    loadMoreButton: document.getElementById("loadMoreButton"),
+    loadMoreCount: document.getElementById("loadMoreCount"),
   };
+
+  const PAGE_SIZE = 48;
 
   const modal = {
     instance: new bootstrap.Modal(document.getElementById("showModal")),
@@ -40,7 +51,9 @@
   const state = {
     searchTerm: "",
     shows: [],        // every show returned by the API
+    searchMode: "name",
     genre: null,      // active genre filter
+    limit: PAGE_SIZE, // number of cards currently rendered
     loaded: false,
   };
 
@@ -64,6 +77,35 @@
     elements.toastMessage.textContent = message;
     errorToast.show();
   }
+
+  /* ---------- Search mode ---------- */
+
+  const currentMode = () =>
+    document.querySelector('input[name="searchMode"]:checked').value;
+
+  function setMode(mode) {
+    document.getElementById(mode === "genre" ? "modeGenre" : "modeName").checked = true;
+    const isGenre = mode === "genre";
+    elements.nameGroup.hidden = isGenre;
+    elements.genreGroup.hidden = !isGenre;
+    elements.searchLabel.textContent = isGenre ? "Search by genre" : "Search by title";
+    elements.searchLabel.htmlFor = isGenre ? "genreSelect" : "searchInput";
+  }
+
+  function populateGenres(genres) {
+    elements.genreSelect.innerHTML = genres
+      .map((genre) => `<option value="${escapeHtml(genre)}">${escapeHtml(genre)}</option>`)
+      .join("");
+  }
+
+  function selectGenre(value) {
+    const match = [...elements.genreSelect.options]
+      .find((option) => option.value.toLowerCase() === String(value).toLowerCase());
+    if (match) elements.genreSelect.value = match.value;
+  }
+
+  const currentTerm = () =>
+    currentMode() === "genre" ? elements.genreSelect.value : elements.input.value;
 
   /* ---------- Theme ---------- */
 
@@ -113,6 +155,7 @@
     const average = matching.length
       ? (matching.reduce((sum, show) => sum + show.rating, 0) / matching.length).toFixed(1)
       : "-";
+    elements.statTermLabel.textContent = state.searchMode === "genre" ? "Genre" : "Search term";
     elements.statTerm.textContent = state.searchTerm;
     elements.statTerm.title = state.searchTerm;
     elements.statFound.textContent = state.shows.length;
@@ -182,6 +225,7 @@
     if (!state.loaded) return;
     renderStats();
     elements.toolbar.hidden = state.shows.length === 0;
+    elements.loadMoreWrap.hidden = true;
 
     if (state.shows.length === 0) {
       renderEmpty("bi-search", "No results were returned",
@@ -200,7 +244,16 @@
     }
 
     elements.empty.hidden = true;
-    elements.results.innerHTML = visible.map(cardHtml).join("");
+    elements.results.innerHTML = visible.slice(0, state.limit).map(cardHtml).join("");
+    const remaining = visible.length - state.limit;
+    elements.loadMoreWrap.hidden = remaining <= 0;
+    elements.loadMoreCount.textContent = remaining > 0 ? `(${remaining} more)` : "";
+  }
+
+  // Re-render from the first page (after a filter, sort or threshold change).
+  function resetAndRender() {
+    state.limit = PAGE_SIZE;
+    renderResults();
   }
 
   function openModal(show) {
@@ -234,8 +287,9 @@
     elements.button.querySelector(".btn-label").classList.toggle("d-none", isLoading);
   }
 
-  async function search(term) {
-    const searchTerm = term.trim();
+  async function search() {
+    const searchMode = currentMode();
+    const searchTerm = currentTerm().trim();
     if (!searchTerm) {
       elements.searchError.hidden = false;
       elements.input.classList.add("is-invalid");
@@ -247,7 +301,7 @@
 
     setLoading(true);
     renderSkeletons();
-    const params = new URLSearchParams({ q: searchTerm, min_rating: minimumRating() });
+    const params = new URLSearchParams({ q: searchTerm, mode: searchMode, min_rating: minimumRating() });
     history.replaceState(null, "", `?${params}`);
 
     try {
@@ -255,10 +309,11 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Search failed.");
       state.searchTerm = data.search_term;
+      state.searchMode = data.search_mode;
       state.shows = data.shows;
       state.genre = null;
       state.loaded = true;
-      renderResults();
+      resetAndRender();
     } catch (error) {
       state.loaded = false;
       elements.stats.hidden = true;
@@ -270,23 +325,33 @@
     }
   }
 
+  function applySearchSettings(term, mode) {
+    setMode(mode);
+    if (mode === "genre") selectGenre(term);
+    else elements.input.value = term;
+  }
+
   async function loadDefaults() {
-    const params = new URLSearchParams(location.search);
-    if (params.has("q")) {
-      elements.input.value = params.get("q");
-      if (params.has("min_rating")) elements.range.value = params.get("min_rating");
-      updateRangeLabel();
-      search(elements.input.value);
-      return;
-    }
+    let config = { search_term: "", search_mode: "name", minimum_rating: 8, genres: [] };
     try {
       const response = await fetch("/api/config");
-      const config = await response.json();
-      elements.input.value = config.search_term || "";
-      elements.range.value = config.minimum_rating ?? 8;
+      config = await response.json();
     } catch {
       /* keep the built-in defaults */
     }
+    populateGenres(config.genres);
+
+    // A shared link (?q=...&mode=...&min_rating=...) wins over config.json.
+    const params = new URLSearchParams(location.search);
+    if (params.has("q")) {
+      applySearchSettings(params.get("q"), params.get("mode") || "name");
+      if (params.has("min_rating")) elements.range.value = params.get("min_rating");
+      updateRangeLabel();
+      search();
+      return;
+    }
+    applySearchSettings(config.search_term || "", config.search_mode || "name");
+    elements.range.value = config.minimum_rating ?? 8;
     updateRangeLabel();
   }
 
@@ -298,7 +363,15 @@
 
   elements.form.addEventListener("submit", (event) => {
     event.preventDefault();
-    search(elements.input.value);
+    search();
+  });
+
+  elements.modeInputs.forEach((input) =>
+    input.addEventListener("change", () => setMode(currentMode())));
+
+  elements.loadMoreButton.addEventListener("click", () => {
+    state.limit += PAGE_SIZE;
+    renderResults();
   });
 
   elements.input.addEventListener("input", () => {
@@ -309,24 +382,24 @@
   // The rating filter is applied instantly in the browser, so no new API call is needed.
   elements.range.addEventListener("input", () => {
     updateRangeLabel();
-    renderResults();
+    resetAndRender();
   });
 
   document.querySelectorAll(".quick-search").forEach((button) =>
     button.addEventListener("click", () => {
-      elements.input.value = button.textContent.trim();
-      search(elements.input.value);
+      applySearchSettings(button.textContent.trim(), button.dataset.mode);
+      search();
     }));
 
   elements.genreFilters.addEventListener("click", (event) => {
     const chip = event.target.closest("[data-genre]");
     if (!chip) return;
     state.genre = chip.dataset.genre || null;
-    renderResults();
+    resetAndRender();
   });
 
-  elements.showAll.addEventListener("change", renderResults);
-  elements.sort.addEventListener("change", renderResults);
+  elements.showAll.addEventListener("change", resetAndRender);
+  elements.sort.addEventListener("change", resetAndRender);
 
   elements.results.addEventListener("click", (event) => {
     const card = event.target.closest(".show-card");
